@@ -67,7 +67,7 @@ async def get_answer(callback: CallbackQuery):
         await get_question(callback.message, user_id)
     else:
         await callback.message.answer(
-            f"Это был последний вопрос. Поздравляю с окончанием! Надеюсь, тебе понравилось :)\nТвой итоговый счет: {await get_max_score(user_id)} баллов")
+            f"Это был последний вопрос. Поздравляю с окончанием! Надеюсь, тебе понравилось :)\nТвой итоговый счет: {await get_current_score(user_id)} баллов, максимальный - {await get_max_score(user_id)} баллов.")
 
 
 # Обновление таблицы
@@ -145,6 +145,15 @@ async def add_correct_answer(user_id):
 async def get_max_score(user_id):
     async with aiosqlite.connect(DB_NAME) as db:
         async with db.execute('SELECT correct_answers_max FROM quiz_state WHERE user_id = (?)', (user_id,)) as cursor:
+            result = await cursor.fetchone()
+            if result:
+                return result[0]
+            else:
+                return 0
+
+async def get_current_score(user_id):
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute('SELECT correct_answers_current FROM quiz_state WHERE user_id = (?)', (user_id,)) as cursor:
             result = await cursor.fetchone()
             if result:
                 return result[0]
